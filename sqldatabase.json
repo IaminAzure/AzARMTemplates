@@ -9,9 +9,6 @@
         "sql_server_name": {
             "type": "String"
         },
-        "sql_database_name": {
-            "type": "String"
-        },
         "maxcores": {
             "type": "int"
         },
@@ -46,6 +43,13 @@
         "aad_only_auth": {
             "defaultValue": true,
             "type": "Bool"
+        },
+        "environment": {
+            "type": "array",
+            "defaultValue": [ "stg", "dev", "prod" ],
+            "metadata": {
+                "description": "description"
+            }
         }
     },
     "variables": {},
@@ -56,7 +60,7 @@
             "name": "[parameters('sql_server_name')]",
             "location": "[parameters('location')]",
             "properties": {
-                "version" : "12.0",
+                "version": "12.0",
                 "administrators": {
                     "login": "[parameters('aad_admin_name')]",
                     "sid": "[parameters('aad_admin_objectid')]",
@@ -67,12 +71,19 @@
             }
         },
         {
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/', parameters('sql_server_name'))]"
+            ],
+            "copy": {
+                "name": "storagecopy",
+                "count": "[length(parameters('environment'))]"
+            },
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2022-05-01-preview",
-            "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
+            "name": "[concat(parameters('sql_server_name'), '/', format('sqldb-iri-{0}-eastus-001', parameters('environment')[copyIndex()]))]",
             "location": "[parameters('location')]",
             "sku": {
-                "name": "GP_S_Gen5_1",
+                "name": "GP_S_Gen5",
                 "tier": "GeneralPurpose",
                 "family": "Gen5",
                 "capacity": "[parameters('maxcores')]"

@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "eastus"
+        },
+        "sql_server_name": {
+            "value": "sqlsvr-ird-poc-001" 
+        },
+        "maxcores": {
+            "value":1 
+        },
+        "aad_admin_name": {
+            "value": "vinod.nallavade@gmail.com" 
+        },
+        "aad_admin_objectid": {
+            "value": "ba7347ed-09cb-41b5-a246-e4fa5144c076" 
+        },
+        "aad_admin_type": {
+            "value": "User"
+        },
+        "aad_only_auth": {
+            "value": true
+        },
+        "environment": {
+            "value": ["stg","dev","prod"]
+        }
+    }
+}
