@@ -1,0 +1,93 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "eastus"
+        },
+        "sql_server_name": {
+            "type": "String"
+        },
+        "sql_database_name": {
+            "type": "String"
+        },
+        "maxcores": {
+            "type": "int"
+        },
+        "aad_admin_name": {
+            "type": "String",
+            "metadata": {
+                "description": "The name of the Azure AD admin for the SQL server."
+            }
+        },
+        "aad_admin_objectid": {
+            "type": "String",
+            "metadata": {
+                "description": "The Object ID of the Azure AD admin if the admin is a user or group. For Applications, use the Application ID."
+            }
+        },
+        "aad_admin_tenantid": {
+            "type": "String",
+            "defaultValue": "[subscription().tenantId]",
+            "metadata": {
+                "description": "The Tenant ID of the Azure Active Directory"
+            }
+        },
+        "aad_admin_type": {
+            "defaultValue": "User",
+            "allowedValues": [
+                "User",
+                "Group",
+                "Application"
+            ],
+            "type": "String"
+        },
+        "aad_only_auth": {
+            "defaultValue": true,
+            "type": "Bool"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2022-05-01-preview",
+            "name": "[parameters('sql_server_name')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "version" : "12.0",
+                "administrators": {
+                    "login": "[parameters('aad_admin_name')]",
+                    "sid": "[parameters('aad_admin_objectid')]",
+                    "tenantId": "[parameters('aad_admin_tenantid')]",
+                    "principalType": "[parameters('aad_admin_type')]",
+                    "azureADOnlyAuthentication": "[parameters('aad_only_auth')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2022-05-01-preview",
+            "name": "[concat(parameters('sql_server_name'), '/', parameters('sql_database_name'))]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "GP_S_Gen5_1",
+                "tier": "GeneralPurpose",
+                "family": "Gen5",
+                "capacity": "[parameters('maxcores')]"
+            },
+            "kind": "v12.0,user,vcore,serverless",
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 34359738368,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false,
+                "readScale": "Disabled",
+                "autoPauseDelay": 60,
+                "storageAccountType": "GRS",
+                "minCapacity": 0.5
+            }
+        }
+    ]
+}
